@@ -52,8 +52,6 @@ impl<T> SlotMap<T> {
     }
 
     pub fn insert(&mut self, value: T) -> Key {
-        self.len += 1;
-
         match self.free_head {
             Some(index) => {
                 let slot = &mut self.slots[index as usize];
@@ -64,6 +62,7 @@ impl<T> SlotMap<T> {
                         self.free_head = *next_free;
 
                         *slot = Slot::Occupied { value, generation };
+                        self.len += 1;
 
                         Key {
                             index,
@@ -76,10 +75,11 @@ impl<T> SlotMap<T> {
                 }
             },
             None => {
-                let index = self.slots.len() as u32; // using slots.len() because len has already
+                let index = self.len; // using slots.len() because len has already
                                                      // been incremented
                 let generation = 0; // New slot
-                
+               
+                self.len += 1;
                 self.slots.push(Slot::Occupied { value, generation });
 
                 Key {
